@@ -62,7 +62,8 @@ static const u8x8_display_info_t u8x8_e3keys_sb6432_display_info =
 };
 
 
-#define E3KEYS_AT_CMD_SET_DISPLAY_ADDR_WRITE_DATA 0x40
+#define E3KEYS_AT_CMD_SET_DISPLAY_ADDR_WRITE_DATA_LEGACY 0x40
+#define E3KEYS_AT_CMD_SET_DISPLAY_ADDR_WRITE_DATA_UPPER_RIGHT 0x48
 #define E3KEYS_AT_CMD_SET_RGB_COLOR 0x42
 #define E3KEYS_AT_CMD_END_TRANSMISSION 0x43
 
@@ -112,8 +113,7 @@ uint8_t u8x8_d_e3keys_sb6432(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 #endif
   const u8x8_display_info_t *d_info = u8x8->display_info;
   u8x8_tile_t *tile;
-  const uint16_t y_addr_offset = d_info->pixel_height / 8;
-  const uint16_t upper_left_addr = d_info->pixel_width * (d_info->pixel_height / 4) - y_addr_offset;
+  const uint16_t upper_left_addr = d_info->pixel_width * (d_info->pixel_height / 4);
 
   switch(msg)
   {
@@ -159,10 +159,7 @@ uint8_t u8x8_d_e3keys_sb6432(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
             /* Add x position */
             uint16_t addr = upper_left_addr - (tile->x_pos + c + i) * 8 * 8;
             /* Add y position */
-            if (tile->y_pos < (d_info->tile_height / 2)) /* upper half */
-              addr += tile->y_pos * 2;
-            else /* lower half */
-              addr += (tile->y_pos - (d_info->tile_height / 2)) * 2 - y_addr_offset;
+            addr += tile->y_pos * 2;
             /* Add tile offset */
             addr -= j * 8;
 
@@ -180,7 +177,7 @@ uint8_t u8x8_d_e3keys_sb6432(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
             data_bytes[0] = tile->tile_ptr[c * 8 + j] & 0x0f;
             data_bytes[1] = (tile->tile_ptr[c * 8 + j] >> 4) & 0x0f;
 
-            u8x8_cad_SendCmd(u8x8, E3KEYS_AT_CMD_SET_DISPLAY_ADDR_WRITE_DATA);
+            u8x8_cad_SendCmd(u8x8, E3KEYS_AT_CMD_SET_DISPLAY_ADDR_WRITE_DATA_UPPER_RIGHT);
             u8x8_cad_SendData(u8x8, 3, addr_bytes);
             u8x8_cad_SendData(u8x8, 2, data_bytes);
           };
